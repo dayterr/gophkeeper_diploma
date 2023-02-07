@@ -18,10 +18,10 @@ func CreateRouterWithAsyncHandler(ah *handlers.AsyncHandler) chi.Router {
 		r.Post("/login", ah.LogUser)
 	})
 
-	r.Route("/cards", func(r chi.Router) {
-		r.Post("/", ah.PostCard)
-		r.Get("/", ah.ListCards)
-		r.Delete("/{cardID}", ah.DeleteCard)
+	r.Route("/{dataType}", func(r chi.Router) {
+		r.Post("/", ah.PostData)
+		r.Get("/", ah.ListData)
+		r.Delete("/{dataID}", ah.DeleteData)
 	})
 
 	return r

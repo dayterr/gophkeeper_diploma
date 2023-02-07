@@ -18,3 +18,4 @@ certs
 *.sh
 *.out
 logs
+.DS_Store

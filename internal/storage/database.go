@@ -33,10 +33,10 @@ func NewDB(dsn string) (DBStorage, error) {
 
 	_, err = db.ExecContext(ctx,
 		`CREATE TABLE IF NOT EXISTS cards (id serial PRIMARY KEY, 
-                                  card_number TEXT NOT NULL, 
-                                  exp_date TEXT NOT NULL,
-                                  cardholder TEXT NOT NULL,
-                                  cvv TEXT NOT NULL,
+                                  card_number BYTEA NOT NULL, 
+                                  exp_date BYTEA NOT NULL,
+                                  cardholder BYTEA NOT NULL,
+                                  cvv BYTEA NOT NULL,
                                   metadata text,
                                   user_id INT NOT NULL,
                                   FOREIGN KEY (user_id) REFERENCES public.users(id));`)
@@ -44,6 +44,41 @@ func NewDB(dsn string) (DBStorage, error) {
 		return DBStorage{}, err
 	}
 	log.Info().Msg("table cards created")
+
+	_, err = db.ExecContext(ctx,
+		`CREATE TABLE IF NOT EXISTS passwords (id serial PRIMARY KEY, 
+                                  login BYTEA NOT NULL, 
+                                  password BYTEA NOT NULL,
+                                  metadata text,
+                                  user_id INT NOT NULL,
+                                  FOREIGN KEY (user_id) REFERENCES public.users(id));`)
+	if err != nil {
+		return DBStorage{}, err
+	}
+	log.Info().Msg("table passwords created")
+
+	_, err = db.ExecContext(ctx,
+		`CREATE TABLE IF NOT EXISTS texts (id serial PRIMARY KEY, 
+                                  text BYTEA NOT NULL,
+                                  metadata text,
+                                  user_id INT NOT NULL,
+                                  FOREIGN KEY (user_id) REFERENCES public.users(id));`)
+	if err != nil {
+		return DBStorage{}, err
+	}
+	log.Info().Msg("table texts created")
+
+	_, err = db.ExecContext(ctx,
+		`CREATE TABLE IF NOT EXISTS files (id serial PRIMARY KEY,
+								  filename BYTEA NOT NULL,
+                                  data BYTEA NOT NULL,
+                                  metadata text,
+                                  user_id INT NOT NULL,
+                                  FOREIGN KEY (user_id) REFERENCES public.users(id));`)
+	if err != nil {
+		return DBStorage{}, err
+	}
+	log.Info().Msg("table files created")
 
 	return DBStorage{
 		DB:           db,

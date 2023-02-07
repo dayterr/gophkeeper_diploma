@@ -6,4 +6,5 @@ type ServerConfig struct {
 	JWTKey string `env:"JWT_KEY"`
 	AddressCert string `env:"ADDRESS_CERT"`
 	AddressCertKey string `env:"ADDRESS_CERT_KEY"`
+	CryptoKey string `env:"CRYPTO_KEY"`
 }

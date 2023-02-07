@@ -2,9 +2,12 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
+
+var ErrorNotAuthorized = errors.New("this user can't delete this data")
 
 func (dbs DBStorage) AddCard(ctx context.Context, userID int64, card Card) error {
 	select {
@@ -16,10 +19,11 @@ func (dbs DBStorage) AddCard(ctx context.Context, userID int64, card Card) error
 
 		_, err := dbs.DB.QueryContext(
 			ctx,
-			`INSERT INTO card (card_number, exp_date, cardholder, cvv, metadata, user_id) VALUES ($1, $2, $3, $4, $5, $6)`,
+			`INSERT INTO cards (card_number, exp_date, cardholder, cvv, metadata, user_id) VALUES ($1, $2, $3, $4, $5, $6)`,
 			card.CardNumber, card.ExpDate, card.Cardholder, card.CVV, card.Metadata, userID)
 
 		if err != nil {
+			log.Info().Msg("error doing query")
 			return err
 		}
 	}
@@ -38,7 +42,7 @@ func (dbs DBStorage) ListCards(ctx context.Context, userID int64) ([]Card, error
 		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 		log.Info().Msg("getting cards from the database")
 		res, err := dbs.DB.QueryContext(ctx,
-			`SELECT number, card_number, exp_date, cardholder, cvv, metadata from orders WHERE user_id = $1`, userID)
+			`SELECT id, card_number, exp_date, cardholder, cvv, metadata FROM cards WHERE user_id = $1`, userID)
 		if err != nil {
 			return []Card{}, err
 		}
@@ -47,10 +51,11 @@ func (dbs DBStorage) ListCards(ctx context.Context, userID int64) ([]Card, error
 
 		for res.Next() {
 			card := Card{}
-			err = res.Scan(&card.CardNumber, &card.ExpDate, &card.Cardholder, &card.CVV, &card.Metadata)
+			err = res.Scan(&card.ID, &card.CardNumber, &card.ExpDate, &card.Cardholder, &card.CVV, &card.Metadata)
 			if err != nil {
 				return []Card{}, err
 			}
+			
 			cards = append(cards, card)
 		}
 
@@ -59,10 +64,33 @@ func (dbs DBStorage) ListCards(ctx context.Context, userID int64) ([]Card, error
 		}
 	}
 
-	log.Info().Msg("card added successfully")
+	log.Info().Msg("cards listed successfully")
 	return cards, nil
 }
 
-func (dbs DBStorage) DeleteCard(ctx context.Context, cardID int64) {
+func (dbs DBStorage) DeleteCard(ctx context.Context, userID, cardID int64) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+		log.Info().Msg("deleting the card")
 
+		res, err := dbs.DB.ExecContext(ctx,
+			`DELETE FROM cards WHERE user_id = $1 and id = $2`, userID, cardID)
+		if err != nil {
+			log.Info().Msg("error deleting card")
+			return err
+		}
+
+		r, _ := res.RowsAffected()
+
+		if r == 0 {
+			return ErrorNotAuthorized
+		}
+	}
+
+	log.Info().Msg("card deleted successfully")
+
+	return nil
 }

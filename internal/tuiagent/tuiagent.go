@@ -7,6 +7,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const r = 114
+const l = 108
+const q = 113
+const b = 98
+
 var form = tview.NewForm()
 var pages = tview.NewPages()
 var flex = tview.NewFlex()
@@ -19,6 +24,18 @@ var text = tview.NewTextView().
 (l) to login
 (q) to quit`)
 var flexAuth = tview.NewFlex()
+var cardsList = tview.NewList()
+var cardFlex = tview.NewFlex()
+var passwordsList = tview.NewList()
+var passwordFlex = tview.NewFlex()
+var textsList = tview.NewList()
+var textFlex = tview.NewFlex()
+var filesList = tview.NewList()
+var fileFlex = tview.NewFlex()
+var textBack = tview.NewTextView().
+	SetTextColor(tcell.ColorGreen).
+	SetText(
+		`(b) to get back to the menu`)
 
 func (t TUIClient) Run() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
@@ -26,44 +43,81 @@ func (t TUIClient) Run() {
 
 	flex.SetDirection(tview.FlexRow).AddItem(text, 0, 1, true)
 	flexAuth.SetDirection(tview.FlexRow).AddItem(text, 0, 1, true)
+	cardFlex.SetDirection(tview.FlexRow).AddItem(cardsList, 0, 1, false)
+	cardFlex.SetDirection(tview.FlexRow).AddItem(form, 0, 1, false)
+	cardFlex.SetDirection(tview.FlexRow).AddItem(textBack, 0, 1, false)
+	passwordFlex.SetDirection(tview.FlexRow).AddItem(passwordsList, 0, 1, false)
+	passwordFlex.SetDirection(tview.FlexRow).AddItem(form, 0, 1, false)
+	passwordFlex.SetDirection(tview.FlexRow).AddItem(textBack, 0, 1, false)
+	textFlex.SetDirection(tview.FlexRow).AddItem(textsList, 0, 1, false)
+	textFlex.SetDirection(tview.FlexRow).AddItem(form, 0, 1, false)
+	textFlex.SetDirection(tview.FlexRow).AddItem(textBack, 0, 1, false)
+	fileFlex.SetDirection(tview.FlexRow).AddItem(filesList, 0, 1, false)
+	fileFlex.SetDirection(tview.FlexRow).AddItem(form, 0, 1, false)
+	fileFlex.SetDirection(tview.FlexRow).AddItem(textBack, 0, 1, false)
 
 	flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Rune() {
-		case 114:
+		case r:
 			form.Clear(true)
 			t.registerUserForm("")
 			pages.SwitchToPage("Register page")
-			/*fileLogger.Info().Msg(u.Login)
-			err := t.RegisterUser(u)
-			if err != nil {
-				pages.SwitchToPage("Main page")
-			} else {
-				textAuth := fmt.Sprintf(`Hello, %s! Which data wuld you like to work with?`, u.Login)
-				_ = textAuth
-			}*/
+		case l:
 
-		case 108:
 			form.Clear(true)
 			t.loginUserForm("")
 			pages.SwitchToPage("Login page")
-		case 97:
-			form.Clear(true)
-			addCardForm("")
-			pages.SwitchToPage("Card page")
 		default:
 			t.TUIApp.Stop()
 		}
 		return event
 	})
 
-	/*form.AddTextArea("", "Hello, user! Please, register or log in", 5,
-		5, 5, func(text string) {}("Hello, user! Please, register or log in"))*/
+	cardFlex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Rune() {
+		case b:
+			t.formMainPageLogged("user")
+			pages.SwitchToPage("Authorized page")
+		}
+		return event
+	})
+
+	passwordFlex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Rune() {
+		case b:
+			t.formMainPageLogged("user")
+			pages.SwitchToPage("Authorized page")
+		}
+		return event
+	})
+
+	textFlex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Rune() {
+		case b:
+			t.formMainPageLogged("user")
+			pages.SwitchToPage("Authorized page")
+		}
+		return event
+	})
+
+	fileFlex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Rune() {
+		case b:
+			t.formMainPageLogged("user")
+			pages.SwitchToPage("Authorized page")
+		}
+		return event
+	})
 
 	pages.AddPage("Main page", flex, true, true)
 	pages.AddPage("Card page", form, true, false)
 	pages.AddPage("Register page", form, true, false)
 	pages.AddPage("Login page", form, true, false)
 	pages.AddPage("Authorized page", form, true, false)
+	pages.AddPage("Card list", cardFlex, true, false)
+	pages.AddPage("Password list", passwordFlex, true, false)
+	pages.AddPage("Text list", textFlex, true, false)
+	pages.AddPage("File list", fileFlex, true, false)
 
 	err := t.TUIApp.SetRoot(pages, true).EnableMouse(true).Run()
 	if err != nil {

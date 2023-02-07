@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/dayterr/gophkeeper_diploma/internal/authjwt"
 	"github.com/dayterr/gophkeeper_diploma/internal/storage"
+	"github.com/dayterr/gophkeeper_diploma/internal/validators"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"io"
@@ -24,6 +25,14 @@ func (ah *AsyncHandler) RegisterUser(w http.ResponseWriter, r *http.Request){
 	defer r.Body.Close()
 
 	var u storage.User
+	err = validators.ValidateUser(u)
+	if err != nil {
+		log.Info().Msg("a field was empty")
+		w.Write([]byte(err.Error()))
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	err = json.Unmarshal(body, &u)
 	if err != nil {
 		log.Info().Msg("error unmarshalling user data")
@@ -60,6 +69,7 @@ func (ah *AsyncHandler) RegisterUser(w http.ResponseWriter, r *http.Request){
 	http.SetCookie(w, &http.Cookie{
 		Name:  "Bearer",
 		Value: token,
+		Path: "/",
 	})
 	w.WriteHeader(http.StatusOK)
 }
@@ -110,6 +120,7 @@ func (ah *AsyncHandler) LogUser(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:  "Bearer",
 		Value: token,
+		Path: "/",
 	})
 
 	w.WriteHeader(http.StatusOK)

@@ -2,13 +2,14 @@ package tuiagent
 
 import (
 	"github.com/dayterr/gophkeeper_diploma/internal/storage"
+	"github.com/dayterr/gophkeeper_diploma/internal/validators"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"fmt"
 )
 
-const MsgCardSaved = "The card data has been successfully saved"
 
-func addCardForm(msg string) *tview.Form {
+func (t TUIClient) addCardForm(msg string) *tview.Form {
 	var c storage.Card
 
 	form.AddInputField("Card Number *", "", 20, nil, func(cn string) {
@@ -39,28 +40,79 @@ func addCardForm(msg string) *tview.Form {
 
 
 	form.AddButton("Save card", func() {
-		err := validateCard(c)
+		err := validators.ValidateCard(c)
 		switch err {
-		case ErrorInvalidCardNumber:
+		case validators.ErrorInvalidCardNumber:
 			form.Clear(true)
-			addCardForm(ErrorInvalidCardNumber.Error())
-		case ErrorInvalidCVV:
+			t.addCardForm(validators.ErrorInvalidCardNumber.Error())
+		case validators.ErrorInvalidCVV:
 			form.Clear(true)
-			addCardForm(ErrorInvalidCVV.Error())
+			t.addCardForm(validators.ErrorInvalidCVV.Error())
 		default:
-			form.AddTextView("",
-				MsgCardSaved,
-				40, 5, false, false)
-			pages.SwitchToPage("Main page")
+			err = t.SendCard(c)
+			if err != nil {
+				form.Clear(true)
+				t.addCardForm(err.Error())
+			} else {
+				form.Clear(true)
+				form = t.formMainPageLogged("")
+			}
 		}
 
 	}).SetButtonBackgroundColor(tcell.ColorDarkBlue).SetButtonTextColor(tcell.ColorGreen)
 
+	return form
+}
+
+func (t TUIClient) listCardsForm()  {
+	cardsList.Clear()
+	cards, err := t.ListCards()
+	if err != nil {
+		textsList.AddItem("some error occurred, please try again", "", 1, nil)
+	}
+
+	for index, card := range cards {
+		ci := fmt.Sprintf("id is %d", card.ID)
+		cardsList.AddItem(card.CardNumber + " " + card.ExpDate + " " + ci + " " + card.Metadata, "", rune(49+index), nil)
+	}
+	t.TUIApp.SetFocus(cardsList)
+
+}
+
+func (t TUIClient) cardActionsForm(msg string) *tview.Form {
+	form.AddButton("Add a card", func() {
+		form.Clear(true)
+		form = t.addCardForm("")
+	}).SetButtonBackgroundColor(tcell.ColorDarkBlue).SetButtonTextColor(tcell.ColorGreen)
+
+	form.AddButton("List/delete cards", func() {
+		form.Clear(true)
+		t.cardDeleteForm()
+		t.listCardsForm()
+		pages.SwitchToPage("Card list")
+	}).SetButtonBackgroundColor(tcell.ColorDarkBlue).SetButtonTextColor(tcell.ColorGreen)
+
+	if msg != "" {
+		form.AddTextView("",
+			msg,
+			40, 5, false, false)
+	}
 
 	return form
 }
 
-func listCardsForm() *tview.Form {
+func (t TUIClient) cardDeleteForm() *tview.Form {
+	var cardID string
+
+	form.AddInputField("Card id *", "", 20, nil, func(id string) {
+		cardID = id
+	}).SetFieldTextColor(tcell.ColorGreen).SetLabelColor(tcell.ColorGreen)
+
+	form.AddButton("Delete a card", func() {
+		t.DeleteCard(cardID)
+		form = t.formMainPageLogged("user")
+		pages.SwitchToPage("Authorized page")
+	}).SetButtonBackgroundColor(tcell.ColorDarkBlue).SetButtonTextColor(tcell.ColorGreen)
 
 	return form
 }

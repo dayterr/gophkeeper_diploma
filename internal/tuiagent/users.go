@@ -3,6 +3,7 @@ package tuiagent
 import (
 	"fmt"
 	"github.com/dayterr/gophkeeper_diploma/internal/storage"
+	"github.com/dayterr/gophkeeper_diploma/internal/validators"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -27,17 +28,17 @@ func (t TUIClient) registerUserForm(msg string) *tview.Form {
 	}
 
 	form.AddButton("Save", func() {
-		err := validateUser(u)
+		err := validators.ValidateUser(u)
 		switch err {
-		case ErrorEmptyLogin:
+		case validators.ErrorLoginTooShort:
 			form.Clear(true)
-			t.registerUserForm(ErrorEmptyLogin.Error())
-		case ErrorEmptyPassword:
+			t.registerUserForm(validators.ErrorLoginTooShort.Error())
+		case validators.ErrorPasswordTooShort:
 			form.Clear(true)
-			t.registerUserForm(ErrorEmptyPassword.Error())
+			t.registerUserForm(validators.ErrorPasswordTooShort.Error())
 		default:
 			err := t.RegisterUser(u)
-			if err == ErrorAlreadyRegistered {
+			if err == validators.ErrorAlreadyRegistered {
 				form.Clear(true)
 				t.loginUserForm(err.Error())
 			} else {
@@ -75,18 +76,17 @@ func (t TUIClient) loginUserForm(msg string) *tview.Form {
 	}
 
 	form.AddButton("Save", func() {
-		err := validateUser(u)
+		err := validators.ValidateUser(u)
 		switch err {
-		case ErrorEmptyLogin:
+		case validators.ErrorLoginTooShort:
 			form.Clear(true)
-			t.loginUserForm(ErrorEmptyLogin.Error())
-		case ErrorEmptyPassword:
+			t.loginUserForm(validators.ErrorLoginTooShort.Error())
+		case validators.ErrorPasswordTooShort:
 			form.Clear(true)
-			t.loginUserForm(ErrorEmptyPassword.Error())
+			t.loginUserForm(validators.ErrorPasswordTooShort.Error())
 		default:
 			err := t.LogUser(u)
-			if err == ErrorLoginNotFound {
-
+			if err == validators.ErrorLoginNotFound {
 				form.Clear(true)
 				t.registerUserForm(err.Error())
 			} else {
@@ -106,26 +106,32 @@ func (t TUIClient) loginUserForm(msg string) *tview.Form {
 }
 
 func (t TUIClient) formMainPageLogged(login string) *tview.Form {
+	form.Clear(true)
 	msg := fmt.Sprintf("Hello, %s! Which data would you like to work with?", login)
 	form.AddTextView("", msg,
 		50, 5, false, false)
 
 	form.AddButton("Cards", func() {
-
+		form.Clear(true)
+		t.cardActionsForm("")
 	}).SetButtonBackgroundColor(tcell.ColorDarkBlue).SetButtonTextColor(tcell.ColorGreen)
 
 	form.AddButton("Passwords", func() {
-		//TODO
+		form.Clear(true)
+		t.passwordActionsForm()
 	}).SetButtonBackgroundColor(tcell.ColorDarkBlue).SetButtonTextColor(tcell.ColorGreen)
 
-	form.AddButton("Binary data", func() {
-		//TODO
+	form.AddButton("Files", func() {
+		form.Clear(true)
+		t.fileActionsForm()
 	}).SetButtonBackgroundColor(tcell.ColorDarkBlue).SetButtonTextColor(tcell.ColorGreen)
 
-	form.AddButton("Text data", func() {
-		//TODO
+	form.AddButton("Texts", func() {
+		form.Clear(true)
+		t.textActionsForm()
 	}).SetButtonBackgroundColor(tcell.ColorDarkBlue).SetButtonTextColor(tcell.ColorGreen)
 
 
 	return form
 }
+

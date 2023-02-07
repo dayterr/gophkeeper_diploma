@@ -23,7 +23,7 @@ func main() {
 	}
 
 	log.Info().Msg("creating new handler")
-	ah, err := handlers.NewAsyncHandler(config.DatabaseDSN, config.JWTKey)
+	ah, err := handlers.NewAsyncHandler(config.DatabaseDSN, config.JWTKey, config.CryptoKey)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error creating handler")
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/dayterr/gophkeeper_diploma/internal/storage"
 )
 
-func NewAsyncHandler(dsn, jwtKey string) (*AsyncHandler, error) {
+func NewAsyncHandler(dsn, jwtKey, cryptoKey string) (*AsyncHandler, error) {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Info().Msg("creating new async handler")
 
@@ -20,7 +20,7 @@ func NewAsyncHandler(dsn, jwtKey string) (*AsyncHandler, error) {
 		return &AsyncHandler{}, err
 	}
 
-	ah := AsyncHandler{Storage: dbStorage, JWT_Key: jwtKey}
+	ah := AsyncHandler{Storage: dbStorage, JWT_Key: jwtKey, CryptoKey: cryptoKey}
 	log.Info().Msg("handler created successfully")
 
 	return &ah, nil
