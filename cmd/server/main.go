@@ -1,9 +1,10 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/dayterr/gophkeeper_diploma/internal/handlers"
 	"github.com/dayterr/gophkeeper_diploma/internal/routers"
-	"net/http"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -11,11 +12,9 @@ import (
 	"github.com/dayterr/gophkeeper_diploma/internal/config/server"
 )
 
-
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Info().Msg("starting server main")
-
 
 	config, err := server.GetServerConfig()
 	if err != nil {

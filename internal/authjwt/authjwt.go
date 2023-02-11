@@ -1,16 +1,15 @@
 package authjwt
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
-	"time"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/hmac"
 	"crypto/rand"
-	"io"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
-	"fmt"
+	"io"
+	"time"
 
 	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/rs/zerolog"
@@ -23,7 +22,7 @@ func CreateToken(login, key string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &CustomClaims{
 		Login: login,
-		StandardClaims: jwt.StandardClaims {
+		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: jwt.At(time.Now().Add(1440 * time.Minute)),
 			IssuedAt:  jwt.At(time.Now()),
 		},
@@ -50,7 +49,6 @@ func EncryptData(data string, key string) ([]byte, error) {
 
 	c, err := aes.NewCipher([]byte(key))
 	if err != nil {
-		log.Info().Msg(key)
 		log.Info().Msg(err.Error())
 		log.Info().Msg("error creating a new cypher")
 		return []byte{}, err
@@ -63,13 +61,12 @@ func EncryptData(data string, key string) ([]byte, error) {
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
-	fmt.Println([]byte(data))
 	_, err = io.ReadFull(rand.Reader, nonce)
 	if err != nil {
 		log.Info().Msg("error reading nonce")
 		return []byte{}, err
 	}
-	
+
 	return gcm.Seal(nonce, nonce, []byte(data), nil), nil
 }
 
@@ -93,7 +90,7 @@ func DecryptData(data []byte, key string) ([]byte, error) {
 	if len(data) < nonceSize {
 		return []byte{}, errors.New("ciphertext too short")
 	}
-	
+
 	nonce, data := data[:nonceSize], data[nonceSize:]
 
 	log.Info().Msg("data decyphered successfuly")

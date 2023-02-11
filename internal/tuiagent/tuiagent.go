@@ -124,4 +124,3 @@ func (t TUIClient) Run() {
 		log.Fatal().Err(err).Msg("error starting tui")
 	}
 }
-

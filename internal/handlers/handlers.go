@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"context"
-	"github.com/dayterr/gophkeeper_diploma/internal/authjwt"
+	"net/http"
+
 	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"net/http"
+
+	"github.com/dayterr/gophkeeper_diploma/internal/authjwt"
 
 	"github.com/dayterr/gophkeeper_diploma/internal/storage"
 )

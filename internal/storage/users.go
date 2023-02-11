@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -20,6 +21,7 @@ func (dbs DBStorage) AddUser(ctx context.Context, user User) error {
 			user.Login, user.Password)
 
 		if err != nil {
+			fmt.Println(err)
 			return err
 		}
 	}

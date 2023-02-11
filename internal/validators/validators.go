@@ -2,8 +2,6 @@ package validators
 
 import "github.com/dayterr/gophkeeper_diploma/internal/storage"
 
-
-
 func ValidateUser(user storage.User) error {
 	if len(user.Login) < 4 {
 		return ErrorLoginTooShort

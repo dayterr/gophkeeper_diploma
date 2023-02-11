@@ -2,11 +2,12 @@ package storage
 
 import (
 	"context"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-func (dbs DBStorage) AddPassword(ctx context.Context, userID int64, password Password) error {
+func (dbs DBStorage) AddPassword(ctx context.Context, login string, password Password) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -16,8 +17,8 @@ func (dbs DBStorage) AddPassword(ctx context.Context, userID int64, password Pas
 
 		_, err := dbs.DB.QueryContext(
 			ctx,
-			`INSERT INTO passwords (login, password, metadata, user_id) VALUES ($1, $2, $3, $4)`,
-			password.Login, password.Password, password.Metadata, userID)
+			`INSERT INTO passwords (login, password, metadata, user_id) VALUES ($1, $2, $3, (SELECT id FROM users WHERE login = $4))`,
+			password.Login, password.Password, password.Metadata, login)
 
 		if err != nil {
 			log.Info().Msg("error doing query")
@@ -30,7 +31,7 @@ func (dbs DBStorage) AddPassword(ctx context.Context, userID int64, password Pas
 	return nil
 }
 
-func (dbs DBStorage) ListPasswords(ctx context.Context, userID int64) ([]Password, error) {
+func (dbs DBStorage) ListPasswords(ctx context.Context, login string) ([]Password, error) {
 	var passwords []Password
 
 	select {
@@ -40,7 +41,7 @@ func (dbs DBStorage) ListPasswords(ctx context.Context, userID int64) ([]Passwor
 		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 		log.Info().Msg("getting passwords from the database")
 		res, err := dbs.DB.QueryContext(ctx,
-			`SELECT id, login, password, metadata FROM passwords WHERE user_id = $1`, userID)
+			`SELECT id, login, password, metadata FROM passwords WHERE user_id = (SELECT id FROM users WHERE login = $1)`, login)
 		if err != nil {
 			return []Password{}, err
 		}
@@ -66,7 +67,7 @@ func (dbs DBStorage) ListPasswords(ctx context.Context, userID int64) ([]Passwor
 	return passwords, nil
 }
 
-func (dbs DBStorage) DeletePassword(ctx context.Context, userID, passwordID int64) error {
+func (dbs DBStorage) DeletePassword(ctx context.Context, passwordID int64, login string) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -75,7 +76,7 @@ func (dbs DBStorage) DeletePassword(ctx context.Context, userID, passwordID int6
 		log.Info().Msg("deleting the card")
 
 		res, err := dbs.DB.ExecContext(ctx,
-			`DELETE FROM passwords WHERE user_id = $1 and id = $2`, userID, passwordID)
+			`DELETE FROM passwords WHERE id = $1 AND user_id = (SELECT id FROM users WHERE login = $2)`, passwordID, login)
 		if err != nil {
 			log.Info().Msg("error deleting password")
 			return err

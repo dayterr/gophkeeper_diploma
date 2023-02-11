@@ -1,13 +1,14 @@
 package tuiagent
 
 import (
-	"github.com/dayterr/gophkeeper_diploma/internal/storage"
-	"github.com/dayterr/gophkeeper_diploma/internal/validators"
+	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"fmt"
-)
 
+	"github.com/dayterr/gophkeeper_diploma/internal/storage"
+	"github.com/dayterr/gophkeeper_diploma/internal/validators"
+)
 
 func (t TUIClient) addCardForm(msg string) *tview.Form {
 	var c storage.Card
@@ -38,7 +39,6 @@ func (t TUIClient) addCardForm(msg string) *tview.Form {
 			40, 5, false, false)
 	}
 
-
 	form.AddButton("Save card", func() {
 		err := validators.ValidateCard(c)
 		switch err {
@@ -64,7 +64,7 @@ func (t TUIClient) addCardForm(msg string) *tview.Form {
 	return form
 }
 
-func (t TUIClient) listCardsForm()  {
+func (t TUIClient) listCardsForm() {
 	cardsList.Clear()
 	cards, err := t.ListCards()
 	if err != nil {
@@ -73,7 +73,7 @@ func (t TUIClient) listCardsForm()  {
 
 	for index, card := range cards {
 		ci := fmt.Sprintf("id is %d", card.ID)
-		cardsList.AddItem(card.CardNumber + " " + card.ExpDate + " " + ci + " " + card.Metadata, "", rune(49+index), nil)
+		cardsList.AddItem(card.CardNumber+" "+card.ExpDate+" "+ci+" "+card.Metadata, "", rune(49+index), nil)
 	}
 	t.TUIApp.SetFocus(cardsList)
 

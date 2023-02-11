@@ -6,7 +6,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func GetServerConfig () (ServerConfig, error) {
+func GetServerConfig() (ServerConfig, error) {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Info().Msg("getting config for server")
 

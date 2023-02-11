@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/dayterr/gophkeeper_diploma/internal/config/agent"
-	"github.com/dayterr/gophkeeper_diploma/internal/tuiagent"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	"github.com/dayterr/gophkeeper_diploma/internal/config/agent"
+	"github.com/dayterr/gophkeeper_diploma/internal/tuiagent"
 )
 
 func main() {

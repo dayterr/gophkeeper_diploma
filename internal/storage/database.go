@@ -3,14 +3,14 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"time"
+
+	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	_ "github.com/lib/pq"
-	"time"
 )
 
 func NewDB(dsn string) (DBStorage, error) {
-
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Info().Msg("creating database storage")
 
@@ -81,7 +81,7 @@ func NewDB(dsn string) (DBStorage, error) {
 	log.Info().Msg("table files created")
 
 	return DBStorage{
-		DB:           db,
-		DSN:          dsn,
+		DB:  db,
+		DSN: dsn,
 	}, nil
 }

@@ -5,12 +5,14 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/dayterr/gophkeeper_diploma/internal/storage"
-	"github.com/dayterr/gophkeeper_diploma/internal/validators"
-	"github.com/rivo/tview"
+	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
-	"io/ioutil"
+
+	"github.com/rivo/tview"
+
+	"github.com/dayterr/gophkeeper_diploma/internal/storage"
+	"github.com/dayterr/gophkeeper_diploma/internal/validators"
 )
 
 func NewTUICLient(certPath, certKeyPath, addr string) (TUIClient, error) {
@@ -28,10 +30,10 @@ func NewTUICLient(certPath, certKeyPath, addr string) (TUIClient, error) {
 
 	t.HTTPSender = &http.Client{Jar: jar,
 		Transport: &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-			Certificates: []tls.Certificate{cert},
-		},
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+				Certificates:       []tls.Certificate{cert},
+			},
 		}}
 
 	t.Address = addr

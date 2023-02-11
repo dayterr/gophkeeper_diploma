@@ -1,11 +1,13 @@
 package tuiagent
 
 import (
-	"github.com/dayterr/gophkeeper_diploma/internal/storage"
-	"github.com/dayterr/gophkeeper_diploma/internal/validators"
+	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"fmt"
+
+	"github.com/dayterr/gophkeeper_diploma/internal/storage"
+	"github.com/dayterr/gophkeeper_diploma/internal/validators"
 )
 
 func (t TUIClient) addPasswordForm(msg string) *tview.Form {
@@ -29,21 +31,20 @@ func (t TUIClient) addPasswordForm(msg string) *tview.Form {
 			40, 5, false, false)
 	}
 
-
-	form.AddButton("Save card", func() {
+	form.AddButton("Save password", func() {
 		err := validators.ValidatePassword(p)
 		switch err {
 		case validators.ErrorLoginTooShort:
 			form.Clear(true)
-			t.addCardForm(validators.ErrorLoginTooShort.Error())
+			t.addPasswordForm(validators.ErrorLoginTooShort.Error())
 		case validators.ErrorPasswordTooShort:
 			form.Clear(true)
-			t.addCardForm(validators.ErrorPasswordTooShort.Error())
+			t.addPasswordForm(validators.ErrorPasswordTooShort.Error())
 		default:
 			err = t.SendPassword(p)
 			if err != nil {
 				form.Clear(true)
-				t.addCardForm(err.Error())
+				t.addPasswordForm(err.Error())
 			} else {
 				form.Clear(true)
 				form = t.formMainPageLogged("")
@@ -55,7 +56,7 @@ func (t TUIClient) addPasswordForm(msg string) *tview.Form {
 	return form
 }
 
-func (t TUIClient) listPasswordsForm()  {
+func (t TUIClient) listPasswordsForm() {
 	passwordsList.Clear()
 	passwords, err := t.ListPasswords()
 	if err != nil {
@@ -64,7 +65,7 @@ func (t TUIClient) listPasswordsForm()  {
 
 	for index, password := range passwords {
 		pi := fmt.Sprintf("id is %d", password.ID)
-		passwordsList.AddItem(password.Login + " " + password.Password + " " + pi + " " + password.Metadata, "", rune(49+index), nil)
+		passwordsList.AddItem(password.Login+" "+password.Password+" "+pi+" "+password.Metadata, "", rune(49+index), nil)
 	}
 	t.TUIApp.SetFocus(passwordsList)
 

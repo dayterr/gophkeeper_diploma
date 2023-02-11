@@ -2,10 +2,12 @@ package tuiagent
 
 import (
 	"fmt"
-	"github.com/dayterr/gophkeeper_diploma/internal/storage"
-	"github.com/dayterr/gophkeeper_diploma/internal/validators"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	"github.com/dayterr/gophkeeper_diploma/internal/storage"
+	"github.com/dayterr/gophkeeper_diploma/internal/validators"
 )
 
 const MsgTryAgain = "Please, try again"
@@ -131,7 +133,5 @@ func (t TUIClient) formMainPageLogged(login string) *tview.Form {
 		t.textActionsForm()
 	}).SetButtonBackgroundColor(tcell.ColorDarkBlue).SetButtonTextColor(tcell.ColorGreen)
 
-
 	return form
 }
-

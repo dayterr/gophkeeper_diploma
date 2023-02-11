@@ -1,12 +1,14 @@
 package tuiagent
 
 import (
-	"github.com/dayterr/gophkeeper_diploma/internal/storage"
-	"github.com/dayterr/gophkeeper_diploma/internal/validators"
-	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
 	"fmt"
 	"os"
+
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
+
+	"github.com/dayterr/gophkeeper_diploma/internal/storage"
+	"github.com/dayterr/gophkeeper_diploma/internal/validators"
 )
 
 func (t TUIClient) addFileForm(msg string) *tview.Form {
@@ -30,7 +32,6 @@ func (t TUIClient) addFileForm(msg string) *tview.Form {
 			msg,
 			40, 5, false, false)
 	}
-
 
 	form.AddButton("Save file", func() {
 		data, err := os.ReadFile(filepath)
@@ -64,7 +65,7 @@ func (t TUIClient) addFileForm(msg string) *tview.Form {
 	return form
 }
 
-func (t TUIClient) listFilesForm()  {
+func (t TUIClient) listFilesForm() {
 	filesList.Clear()
 	texts, err := t.ListFiles()
 	if err != nil {
@@ -73,7 +74,7 @@ func (t TUIClient) listFilesForm()  {
 
 	for index, binary := range texts {
 		bi := fmt.Sprintf("id is %d", binary.ID)
-		filesList.AddItem(binary.Filename + " " + bi + " " + binary.Metadata, "", rune(49+index), nil)
+		filesList.AddItem(binary.Filename+" "+bi+" "+binary.Metadata, "", rune(49+index), nil)
 	}
 	t.TUIApp.SetFocus(filesList)
 

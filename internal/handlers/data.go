@@ -1,17 +1,19 @@
 package handlers
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"io"
-	"encoding/json"
-	"strconv"
-	"github.com/dayterr/gophkeeper_diploma/internal/storage"
+
 	"github.com/dayterr/gophkeeper_diploma/internal/authjwt"
+	"github.com/dayterr/gophkeeper_diploma/internal/storage"
 	"github.com/dayterr/gophkeeper_diploma/internal/validators"
-	"strings"
 )
 
 func (ah *AsyncHandler) PostData(w http.ResponseWriter, r *http.Request) {
@@ -84,15 +86,9 @@ func (ah *AsyncHandler) PostData(w http.ResponseWriter, r *http.Request) {
 		}
 		c.CVV = string(cyphered)
 
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		login := r.Context().Value("login").(string)
 
-		err = ah.Storage.AddCard(r.Context(), userID, c)
+		err = ah.Storage.AddCard(r.Context(), login, c)
 		if err != nil {
 			log.Info().Msg("error saving card")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -137,15 +133,9 @@ func (ah *AsyncHandler) PostData(w http.ResponseWriter, r *http.Request) {
 		}
 		p.Password = string(cyphered)
 
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		login := r.Context().Value("login").(string)
 
-		err = ah.Storage.AddPassword(r.Context(), userID, p)
+		err = ah.Storage.AddPassword(r.Context(), login, p)
 		if err != nil {
 			log.Info().Msg("error saving password")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -182,15 +172,9 @@ func (ah *AsyncHandler) PostData(w http.ResponseWriter, r *http.Request) {
 		}
 		t.Data = string(cyphered)
 
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		login := r.Context().Value("login").(string)
 
-		err = ah.Storage.AddText(r.Context(), userID, t)
+		err = ah.Storage.AddText(r.Context(), login, t)
 		if err != nil {
 			log.Info().Msg("error saving text")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -227,15 +211,9 @@ func (ah *AsyncHandler) PostData(w http.ResponseWriter, r *http.Request) {
 		}
 		b.Filename = string(cyphered)
 
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		login := r.Context().Value("login").(string)
 
-		err = ah.Storage.AddFile(r.Context(), userID, b)
+		err = ah.Storage.AddFile(r.Context(), login, b)
 		if err != nil {
 			log.Info().Msg("error saving file")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -261,15 +239,9 @@ func (ah *AsyncHandler) ListData(w http.ResponseWriter, r *http.Request) {
 
 	switch dataType {
 	case "cards":
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		login := r.Context().Value("login").(string)
 
-		cards, err := ah.Storage.ListCards(r.Context(), userID)
+		cards, err := ah.Storage.ListCards(r.Context(), login)
 		if err != nil {
 			log.Info().Msg("error getting cards")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -312,7 +284,7 @@ func (ah *AsyncHandler) ListData(w http.ResponseWriter, r *http.Request) {
 			card.CVV = string(decyphered)
 			cardsBody = append(cardsBody, card)
 		}
-		
+
 		body, err := json.Marshal(&cardsBody)
 		if err != err {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -324,15 +296,9 @@ func (ah *AsyncHandler) ListData(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 
 	case "passwords":
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		login := r.Context().Value("login").(string)
 
-		passwords, err := ah.Storage.ListPasswords(r.Context(), userID)
+		passwords, err := ah.Storage.ListPasswords(r.Context(), login)
 		if err != nil {
 			log.Info().Msg("error getting passwords")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -376,15 +342,9 @@ func (ah *AsyncHandler) ListData(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 
 	case "texts":
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		login := r.Context().Value("login").(string)
 
-		texts, err := ah.Storage.ListTexts(r.Context(), userID)
+		texts, err := ah.Storage.ListTexts(r.Context(), login)
 		if err != nil {
 			log.Info().Msg("error getting texts")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -419,15 +379,9 @@ func (ah *AsyncHandler) ListData(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 
 	case "files":
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		login := r.Context().Value("login").(string)
 
-		files, err := ah.Storage.ListFiles(r.Context(), userID)
+		files, err := ah.Storage.ListFiles(r.Context(), login)
 		if err != nil {
 			log.Info().Msg("error getting files")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -491,15 +445,9 @@ func (ah *AsyncHandler) DeleteData(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		
-		err = ah.Storage.DeleteCard(r.Context(), userID, int64(cardID))
+		login := r.Context().Value("login").(string)
+
+		err = ah.Storage.DeleteCard(r.Context(), int64(cardID), login)
 		if err != nil {
 			if strings.Contains(err.Error(), "this user can't") {
 				log.Info().Msg("this card doesn't belong to this user")
@@ -510,11 +458,10 @@ func (ah *AsyncHandler) DeleteData(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		
 		if err != nil {
 			log.Info().Msg("error deleting the card from database")
 			w.WriteHeader(http.StatusInternalServerError)
-			return 
+			return
 		}
 
 		w.WriteHeader(http.StatusNoContent)
@@ -527,15 +474,9 @@ func (ah *AsyncHandler) DeleteData(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		login := r.Context().Value("login").(string)
 
-		err = ah.Storage.DeletePassword(r.Context(), userID, int64(passwordID))
+		err = ah.Storage.DeletePassword(r.Context(), int64(passwordID), login)
 		if err != nil {
 			if strings.Contains(err.Error(), "this user can't") {
 				log.Info().Msg("this password doesn't belong to this user")
@@ -561,15 +502,9 @@ func (ah *AsyncHandler) DeleteData(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		login := r.Context().Value("login").(string)
 
-		err = ah.Storage.DeleteText(r.Context(), userID, int64(textID))
+		err = ah.Storage.DeleteText(r.Context(), int64(textID), login)
 		if err != nil {
 			if strings.Contains(err.Error(), "this user can't") {
 				log.Info().Msg("this text doesn't belong to this user")
@@ -595,15 +530,9 @@ func (ah *AsyncHandler) DeleteData(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 
-		userLogin := r.Context().Value("login").(string)
-		userID, err := ah.Storage.GetUser(r.Context(), userLogin)
-		if err != nil {
-			log.Info().Msg("couldn't find the user")
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		login := r.Context().Value("login").(string)
 
-		err = ah.Storage.DeleteFile(r.Context(), userID, int64(fileID))
+		err = ah.Storage.DeleteFile(r.Context(), int64(fileID), login)
 		if err != nil {
 			if strings.Contains(err.Error(), "this user can't") {
 				log.Info().Msg("this file doesn't belong to this user")

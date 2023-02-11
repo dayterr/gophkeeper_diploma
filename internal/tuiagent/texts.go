@@ -1,11 +1,13 @@
 package tuiagent
 
 import (
-	"github.com/dayterr/gophkeeper_diploma/internal/storage"
-	"github.com/dayterr/gophkeeper_diploma/internal/validators"
+	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"fmt"
+
+	"github.com/dayterr/gophkeeper_diploma/internal/storage"
+	"github.com/dayterr/gophkeeper_diploma/internal/validators"
 )
 
 func (t TUIClient) addTextForm(msg string) *tview.Form {
@@ -24,7 +26,6 @@ func (t TUIClient) addTextForm(msg string) *tview.Form {
 			msg,
 			40, 5, false, false)
 	}
-
 
 	form.AddButton("Save text", func() {
 		err := validators.ValidateText(txt)
@@ -48,7 +49,7 @@ func (t TUIClient) addTextForm(msg string) *tview.Form {
 	return form
 }
 
-func (t TUIClient) listTextsForm()  {
+func (t TUIClient) listTextsForm() {
 	textsList.Clear()
 	texts, err := t.ListTexts()
 	if err != nil {
@@ -57,7 +58,7 @@ func (t TUIClient) listTextsForm()  {
 
 	for index, text := range texts {
 		ti := fmt.Sprintf("id is %d", text.ID)
-		textsList.AddItem(text.Data + " " + ti + " " + text.Metadata, "", rune(49+index), nil)
+		textsList.AddItem(text.Data+" "+ti+" "+text.Metadata, "", rune(49+index), nil)
 	}
 	t.TUIApp.SetFocus(textsList)
 
